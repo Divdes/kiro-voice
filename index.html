@@ -162,7 +162,7 @@ async function processText(t){
  }
 
  // CUACA
- if(tl.match(/cuaca|panas|hujan|dingin|berapa suhu/)){
+ if(tl.match(/^.*(cuaca|suhu udara|suhu sekarang|suhu hari|suhu luar|suhu ruang|berpa (suhu|derajat)|huja. skrng|cua.a skrng|panas gk?|dingin gk?|cemani?).*$/)){
   L('[Bang] '+t,'b'); face('CARi...','#fc0');
   getCuaca().then(function(c){if(c){var msg='Cuaca '+c+' Bang.';L('[Kiro] '+msg,'g');speak(msg);}else{L('[Kiro] Gagal ambil cuaca.','e');speak('Maaf Bang, gagal ambil cuaca');}});
   return;
