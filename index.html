@@ -104,7 +104,7 @@ async function getKurs(){
 
 async function getCuaca(){
  try{
-  var r=await fetch('https://wttr.in/?format=%C+%t+%w');
+  var r=await fetch('https://wttr.in/?format=%C,+suhu+%t,+angin+%w&lang=id');
   var t=await r.text();
   return t.trim();
  }catch(e){return null;}
@@ -158,7 +158,7 @@ async function processText(t){
  // CUACA
  if(tl.match(/cuaca|panas|hujan|dingin|berapa suhu/)){
   L('[Bang] '+t,'b'); face('CARi...','#fc0');
-  getCuaca().then(function(c){if(c){var msg='Cuaca sekarang: '+c+' Bang.';L('[Kiro] '+msg,'g');speak(msg);}else{L('[Kiro] Gagal ambil cuaca.','e');speak('Maaf Bang, gagal ambil cuaca');}});
+  getCuaca().then(function(c){if(c){var msg='Cuaca '+c+' Bang.';L('[Kiro] '+msg,'g');speak(msg);}else{L('[Kiro] Gagal ambil cuaca.','e');speak('Maaf Bang, gagal ambil cuaca');}});
   return;
  }
 
