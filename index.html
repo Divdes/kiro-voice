@@ -12,16 +12,16 @@
 *{margin:0;padding:0}
 html,body{width:100%;height:100%;background:#000;color:var(--b);font-family:'Courier New',monospace;overflow:hidden}
 canvas{position:absolute;top:0;left:0;z-index:1;opacity:0.3;pointer-events:none}
-.ui{position:relative;z-index:99;width:100%;height:100dvh;padding:8px;display:flex;flex-direction:column;background:rgba(0,0,0,0.4)}
+.ui{position:relative;z-index:99;width:100%;min-height:100vh;height:auto;padding:8px;display:flex;flex-direction:column;background:rgba(0,0,0,0.4);box-sizing:border-box}
 .hdr{text-align:center;font-size:0.7rem;letter-spacing:3px;text-shadow:0 0 5px var(--b);margin-bottom:5px}
 .st{border:1px solid var(--b);padding:6px 12px;background:rgba(0,20,0,0.7);font-size:0.7rem;font-weight:bold;letter-spacing:1px;box-shadow:0 0 10px rgba(0,255,65,0.3);text-align:center;margin-bottom:5px}
-.lg{width:100%;flex:2;background:rgba(0,0,0,0.85);border-left:2px solid var(--b);padding:4px 6px;font-size:0.65rem;color:#aaa;overflow-y:auto;line-height:1.3;white-space:pre-wrap;word-break:break-all}
+.lg{width:100%;flex:1 1 auto;background:rgba(0,0,0,0.85);border-left:2px solid var(--b);padding:4px 6px;font-size:0.65rem;color:#aaa;overflow-y:auto;line-height:1.3;white-space:pre-wrap;word-break:break-all;min-height:40vh}
 .lg .s{color:var(--b)} .lg .e{color:#f44} .lg .y{color:#ff0} .lg .a{color:#0ff}
-#b{width:100%;padding:14px;margin-top:3px;background:transparent;color:var(--b);border:2px solid var(--b);font-size:1rem;font-weight:bold;letter-spacing:3px;cursor:pointer;text-transform:uppercase;z-index:999}
+#b{width:100%;padding:14px;margin-top:3px;margin-bottom:2px;background:transparent;color:var(--b);border:2px solid var(--b);font-size:1rem;font-weight:bold;letter-spacing:3px;cursor:pointer;text-transform:uppercase;z-index:999;box-sizing:border-box}
 #b:active{background:var(--b);color:#000}
 .inp{width:100%;display:flex;gap:4px;margin-top:3px}
-.inp input{flex:1;padding:10px;background:#000;color:var(--b);border:1px solid var(--b);font-size:14px;outline:none;font-family:Courier,monospace}
-.inp button{padding:10px 15px;background:transparent;color:var(--b);border:2px solid var(--b);font-size:14px;font-weight:bold;cursor:pointer}
+.inp input{flex:1;padding:10px;background:#000;color:var(--b);border:1px solid var(--b);font-size:14px;outline:none;font-family:Courier,monospace;box-sizing:border-box}
+.inp button{padding:10px 15px;background:transparent;color:var(--b);border:2px solid var(--b);font-size:14px;font-weight:bold;cursor:pointer;box-sizing:border-box}
 .inp button:active{background:var(--b);color:#000}
 </style>
 </head>
@@ -59,7 +59,7 @@ var SYS='Kamu Kiro, asisten Bang Giri. Gaya bicara: tenang, percaya diri, elegan
 
 var busy=0,rec=null,TTS_URL='https://kirotts.loca.lt/tts?text=';
 
-function L(t,c){var p='<br>';if(c=='b')p+='<span style="color:#f44">> </span>';else if(c=='g')p+='<span style="color:#0f0">> </span>';else p+='<span style="color:'+(c=='s'?'#0f0':'#0ff')+'">> </span>';lg.innerHTML+=p+t;lg.scrollTop=lg.scrollHeight;}
+function L(t,c){var p='<br>';if(c=='b')p+='<b style="color:#ff3333">&gt; </b><span style="color:#ff3333">';else if(c=='g')p+='<b style="color:#00ff41">&gt; </b><span style="color:#00ff41">';else p+='<span style="color:#0ff">';lg.innerHTML+=p+t+'</span>';lg.scrollTop=lg.scrollHeight;}
 function face(s,c){st.innerText=s;st.style.color=c;st.style.borderColor=c;}
 
 async function sendAPI(t){
