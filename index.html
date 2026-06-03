@@ -76,8 +76,8 @@ function playAudio(b64){var a=new Audio('data:audio/mp3;base64,'+b64);a.onended=
 function speak(t){
  var ct=t.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu,'').replace(/[_#*`\n\r]/g,' ');
  if(!ct.trim())ct='Tidak ada respon Bang.';
- face('KIRO BICARA (Andrew)','#0ff');
- fetch(TTS_URL+encodeURIComponent(ct)).then(function(r){return r.json();}).then(function(d){playAudio(d.audio);}).catch(function(){L('Relay mati, fallback HP','y');window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(ct);u.lang='id-ID';u.onend=function(){busy=0;face('SIAP','#0f0');};u.onerror=function(){busy=0;face('SIAP','#0f0');};window.speechSynthesis.speak(u);});
+ face('KIRO BICARA','#0ff');
+ fetch(TTS_URL+encodeURIComponent(ct)).then(function(r){return r.json();}).then(function(d){playAudio(d.audio);}).catch(function(){L('Relay mati, pake suara HP','y');window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(ct);u.lang='id-ID';u.onend=function(){busy=0;face('SIAP','#0f0');};u.onerror=function(){busy=0;face('SIAP','#0f0');};window.speechSynthesis.speak(u);});
 }
 
 function onAI(reply){
