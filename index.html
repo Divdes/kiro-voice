@@ -1,222 +1,107 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
- <meta charset="UTF-8">
- <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
- <title>MATRIX_CONSCIOUSNESS_v5.0</title>
- <style>
- :root {
- --matrix-bright: #00ff41;
- --matrix-dark: #003b00;
- --bg-pure: #000000;
- }
- body, html {
- margin: 0;
- padding: 0;
- width: 100%;
- height: 100%;
- background-color: var(--bg-pure);
- font-family: 'Courier New', Courier, monospace;
- overflow: hidden;
- box-sizing: border-box;
- }
- canvas {
- position: absolute;
- top: 0;
- left: 0;
- width: 100%;
- height: 100%;
- z-index: 1;
- opacity: 0.35;
- pointer-events: none;
- }
- .interface-layer {
- position: relative;
- z-index: 99;
- width: 100%;
- height: 100%;
- padding: 15px;
- display: flex;
- flex-direction: column;
- align-items: center;
- justify-content: space-between;
- box-sizing: border-box;
- background: rgba(0, 0, 0, 0.4);
- }
- .matrix-header {
- font-size: 0.7rem;
- color: var(--matrix-bright);
- letter-spacing: 3px;
- text-shadow: 0 0 5px var(--matrix-bright);
- }
- .status-node {
- border: 1px solid var(--matrix-bright);
- padding: 8px 15px;
- background: rgba(0, 20, 0, 0.7);
- color: var(--matrix-bright);
- font-size: 0.8rem;
- font-weight: bold;
- letter-spacing: 1px;
- box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
- text-transform: uppercase;
- }
- .matrix-console {
- width: 100%;
- height: 90px;
- background: rgba(0, 0, 0, 0.85);
- border-left: 2px solid var(--matrix-bright);
- padding: 8px;
- font-size: 0.7rem;
- color: #ffffff;
- box-sizing: border-box;
- overflow-y: auto;
- text-align: left;
- line-height: 1.3;
- }
- .matrix-console span.accent {
- color: var(--matrix-bright);
- text-shadow: 0 0 3px var(--matrix-bright);
- }
- #matrixBtn {
- width: 100%;
- padding: 12px;
- background: transparent;
- color: var(--matrix-bright);
- border: 1px solid var(--matrix-bright);
- font-family: 'Courier New', monospace;
- font-size: 0.8rem;
- font-weight: bold;
- letter-spacing: 2px;
- cursor: pointer;
- text-transform: uppercase;
- box-shadow: 0 0 8px rgba(0, 255, 65, 0.4);
- z-index: 999;
- position: relative;
- }
- #matrixBtn:active {
- background: var(--matrix-bright);
- color: var(--bg-pure);
- box-shadow: 0 0 20px var(--matrix-bright);
- }
- </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>KIRO</title>
+<style>
+:root{--b:#00ff41}
+*{margin:0;padding:0}
+html,body{width:100%;height:100%;background:#000;color:var(--b);font-family:'Courier New',monospace;overflow:hidden}
+canvas{position:absolute;top:0;left:0;z-index:1;opacity:0.3;pointer-events:none}
+.ui{position:relative;z-index:99;width:100%;height:100dvh;padding:15px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;background:rgba(0,0,0,0.4)}
+.h{font-size:0.7rem;letter-spacing:3px;text-shadow:0 0 5px var(--b)}
+.s{border:1px solid var(--b);padding:8px 15px;background:rgba(0,20,0,0.7);font-size:0.8rem;font-weight:bold;letter-spacing:1px;box-shadow:0 0 10px rgba(0,255,65,0.3)}
+.c{width:100%;height:100px;background:rgba(0,0,0,0.85);border-left:2px solid var(--b);padding:8px;font-size:0.7rem;color:#fff;overflow-y:auto;line-height:1.3}
+.c .a{color:var(--b);text-shadow:0 0 3px var(--b)}
+#b{width:100%;padding:16px;background:transparent;color:var(--b);border:2px solid var(--b);font-size:1rem;font-weight:bold;letter-spacing:3px;cursor:pointer;text-transform:uppercase;z-index:999}
+#b:active{background:var(--b);color:#000}
+</style>
 </head>
 <body>
- <canvas id="matrixCanvas"></canvas>
- <div class="interface-layer">
- <div class="matrix-header">[CON_LINK: KIRO_CORE]</div>
- <div class="status-node" id="status-display">SIGNAL_STDBY</div>
- <div class="matrix-console" id="log-box">
- <span class="accent">[SYS]></span> Siap menjalin koneksi pikiran nirkabel...
- </div>
- <button id="matrixBtn">ENTER_THE_MATRIX</button>
- </div>
-
- <script>
-// DEEPSEEK API LANGSUNG
-const API_KEY = "sk-e6063277741f42f7a3df40a2896de212";
-const API_URL = "https://api.deepseek.com/v1/chat/completions";
-const SYS_PROMPT = "Kamu Kiro, asisten Bang Giri. Panggil Bang. Jawab singkat hangat. JANGAN pake emoji.";
-
-// --- 1. MATRIX CANVAS ---
-const canvas = document.getElementById('matrixCanvas');
-const ctx = canvas.getContext('2d');
-function resizeCanvas(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}
-resizeCanvas();
-const chars="アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモ1234567890XYZ";
-const fontSize=10;
-const columns=canvas.width/fontSize;
-const rainDrops=Array(Math.floor(columns)).fill(1);
+<canvas id="cv"></canvas>
+<div class="ui">
+<div class="h">[ KIRO ]</div>
+<div class="s" id="st">SIGNAL_STDBY</div>
+<div class="c" id="lg"><span class="a">[SYS]> </span>Tap tombol, ngomong, Kiro jawab.</div>
+<button id="b">ENTER & NGOMONG</button>
+</div>
+<script>
+var cv=document.getElementById('cv'),cx=cv.getContext('2d');
+cv.width=innerWidth;cv.height=innerHeight;
+var ch='アイウエオ0123456789XYZ',fs=10,cc=cv.width/fs,d=[];
+for(var i=0;i<cc;i++)d[i]=1;
 setInterval(function(){
- ctx.fillStyle='rgba(0,0,0,0.05)';ctx.fillRect(0,0,canvas.width,canvas.height);
- ctx.fillStyle='#0f0';ctx.font=fontSize+'px monospace';
- for(var i=0;i<rainDrops.length;i++){
-  ctx.fillText(chars[Math.floor(Math.random()*chars.length)],i*fontSize,rainDrops[i]*fontSize);
-  if(rainDrops[i]*fontSize>canvas.height&&Math.random()>0.975)rainDrops[i]=0;
-  rainDrops[i]++;
- }
+ cx.fillStyle='rgba(0,0,0,0.05)';cx.fillRect(0,0,cv.width,cv.height);
+ cx.fillStyle='#0f0';cx.font=fs+'px monospace';
+ for(var i=0;i<d.length;i++){cx.fillText(ch[Math.floor(Math.random()*ch.length)],i*fs,d[i]*fs);if(d[i]*fs>cv.height&&Math.random()>0.975)d[i]=0;d[i]++}
 },30);
 
-// --- 2. CORE ---
-var sd=document.getElementById('status-display');
-var lb=document.getElementById('log-box');
-var btn=document.getElementById('matrixBtn');
-var rec=null;
-var speaking=0;
-var micOk=0;
+var st=document.getElementById('st'),lg=document.getElementById('lg'),b=document.getElementById('b');
+var KEY='sk-e6063277741f42f7a3df40a2896de212';
+var URL='https://api.deepseek.com/v1/chat/completions';
+var SYS='Kamu Kiro, asisten Bang Giri. Panggil Bang. Jawab singkat hangat. JANGAN pake emoji.';
+var busy=0,rec=null;
 
-function us(t,c){sd.innerText=t;sd.style.color=c;sd.style.borderColor=c;}
-function log(m){lb.innerHTML+='<br><span class="accent">[SYS]></span> '+m;lb.scrollTop=lb.scrollHeight;}
-function you(m){lb.innerHTML+='<br><span class="accent">[YOU]></span> '+m;lb.scrollTop=lb.scrollHeight;}
-function ai(m){lb.innerHTML+='<br><span class="accent">[AI]></span> '+m;lb.scrollTop=lb.scrollHeight;}
+function log(m){lg.innerHTML+='<br><span class="a">[SYS]></span> '+m;lg.scrollTop=lg.scrollHeight;}
+function you(m){lg.innerHTML+='<br><span class="a">[YOU]></span> '+m;lg.scrollTop=lg.scrollHeight;}
+function ai(m){lg.innerHTML+='<br><span class="a">[AI]></span> '+m;lg.scrollTop=lg.scrollHeight;}
+function face(s,c){st.innerText=s;st.style.color=c;st.style.borderColor=c;}
 
 async function sendAPI(t){
  try{
-  var r=await fetch(API_URL,{
+  var r=await fetch(URL,{
    method:'POST',
-   headers:{'Content-Type':'application/json','Authorization':'Bearer '+API_KEY},
-   body:JSON.stringify({model:'deepseek-chat',messages:[{role:'system',content:SYS_PROMPT},{role:'user',content:t}],max_tokens:300})
+   headers:{'Content-Type':'application/json','Authorization':'Bearer '+KEY},
+   body:JSON.stringify({model:'deepseek-chat',messages:[{role:'system',content:SYS},{role:'user',content:t}],max_tokens:300})
   });
   var d=await r.json();
   return d.choices&&d.choices[0]?d.choices[0].message.content:'Error';
- }catch(e){return 'Jalur data terputus.';}
+ }catch(e){log('API err: '+e.message);return 'Jalur error';}
 }
 
 function speak(t){
- var ct=t.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu,'').replace(/[\n\r_#*`]/g,' ');
+ var ct=t.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu,'').replace(/[_#*`\n\r]/g,' ');
  if(!ct.trim())ct='Tidak ada respon.';
  var u=new SpeechSynthesisUtterance(ct);
  u.lang='id-ID';
- u.onend=function(){speaking=0;us('STREAM_RECV','#0f0');if(rec)rec.start();};
+ u.onend=function(){busy=0;face('SIAP','#0f0');};
  window.speechSynthesis.speak(u);
 }
 
-// VOICE REC - PERTAMA minta izin mic dulu
 function initVoice(){
- navigator.mediaDevices.getUserMedia({audio:true}).then(function(s){
-  s.getTracks().forEach(function(t){t.stop();});
-  micOk=1;
-  log('Mic terhubung');
-  
-  if('webkitSpeechRecognition' in window||'SpeechRecognition' in window){
-   var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-   rec=new SR();
-   rec.continuous=false;rec.interimResults=false;rec.lang='id-ID';
-   rec.onstart=function(){if(!speaking)us('STREAM_RECV','#0f0');};
-   rec.onerror=function(e){if(e.error!='no-speech')us('SIGNAL_ERR','#ff003c');};
-   rec.onend=function(){
-    if(!speaking){us('SIGNAL_STDBY','#0f0');}
-   };
-   rec.onresult=async function(e){
-    var t=e.results[e.results.length-1][0].transcript;
-    if(t.trim()){
-     you(t);
-     speaking=1;
-     us('TRANS_COMP','#ffcc00');
-     if(rec)rec.stop();
-     var reply=await sendAPI(t);
-     ai(reply);
-     us('ORACLE_OUT','#00ffff');
-     speak(reply);
-    }
-   };
-   log('Voice siap. Tekan ENTER_THE_MATRIX');
-  }else{
-   log('Browser gak support voice');
-  }
- }).catch(function(e){log('Mic ditolak: '+e.message);});
+ if(!('webkitSpeechRecognition'in window)&&!('SpeechRecognition'in window)){log('Browser gak support voice');return;}
+ var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ rec=new SR();
+ rec.continuous=false;rec.interimResults=false;rec.lang='id-ID';
+ rec.onresult=async function(e){
+  if(busy)return;
+  busy=1;
+  var t=e.results[e.results.length-1][0].transcript;
+  if(t.trim()){
+   you(t);
+   face('MIKIR...','#ffcc00');
+   if(rec)rec.stop();
+   var reply=await sendAPI(t);
+   ai(reply);
+   face('KIRO BICARA','#00ffff');
+   speak(reply);
+  }else{busy=0;face('SIGNAL_STDBY','#0f0');}
+ };
+ rec.onerror=function(e){if(e.error!='no-speech')log('Voice err: '+e.error);if(!busy)face('SIGNAL_STDBY','#0f0');};
+ rec.onend=function(){if(!busy)face('SIGNAL_STDBY','#0f0');};
+ log('Voice siap');
+ rec.start();
 }
 
-btn.onclick=function(){
- btn.style.display='none';
- log('Gerbang nirkabel aktif. Silahkan bicara...');
- if(!micOk){
-  initVoice();
- }else if(rec){
-  rec.start();
- }
+b.onclick=function(){
+ if(busy)return;
+ if(!rec){initVoice();return;}
+ face('DENGAR...','#ff0');
+ try{rec.start();}catch(e){log('Start err: '+e.message);face('SIGNAL_STDBY','#0f0');}
 };
 
-window.onerror=function(m){log((m||'').toString());return true};
- </script>
+window.onerror=function(m,s,l,c,e){log('Err: '+(m||''));return true};
+</script>
 </body>
 </html>
