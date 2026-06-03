@@ -102,6 +102,18 @@ async function getKurs(){
  }catch(e){return null;}
 }
 
+async function cariGoogle(q){
+ try{
+  var r=await fetch('https://api.allorigins.win/raw?url=https://www.google.com/search?q='+encodeURIComponent(q));
+  var t=await r.text();
+  var m=t.match(/<div[^>]*class="[^"]*BNeawe[^"]*"[^>]*>([^<]+)<\/div>/);
+  if(m&&m[1])return m[1].trim().slice(0,200);
+  var m2=t.match(/<span[^>]*class="[^"]*BNeawe[^"]*"[^>]*>([^<]+)<\/span>/);
+  if(m2&&m2[1])return m2[1].trim().slice(0,200);
+  return null;
+ }catch(e){return null;}
+}
+
 async function getCuaca(){
  try{
   var r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=-6.2146&longitude=106.8451&current_weather=true');
@@ -165,6 +177,21 @@ async function processText(t){
  if(tl.match(/^.*(cuaca|suhu udara|suhu sekarang|suhu hari|suhu luar|suhu ruang|berpa (suhu|derajat)|huja. skrng|cua.a skrng|panas gk?|dingin gk?|cemani?).*$/)){
   L('[Bang] '+t,'b'); face('CARi...','#fc0');
   getCuaca().then(function(c){if(c){var msg='Cuaca '+c+' Bang.';L('[Kiro] '+msg,'g');speak(msg);}else{L('[Kiro] Gagal ambil cuaca.','e');speak('Maaf Bang, gagal ambil cuaca');}});
+  return;
+ }
+
+ // GOOGLE SEARCH - kalo ada kata cari/tanya apa
+ if(tl.match(/^(cari|search|googling|google|tanya apa) /)){
+  var q=t.replace(/^(cari|search|googling|google|tanya apa) /i,'').trim();
+  L('[Bang] '+t,'b'); face('CARi...','#fc0');
+  cariGoogle(q).then(function(g){
+   if(g){var msg=g;L('[Kiro] '+msg,'g');speak(msg);}
+   else{
+    // fallback ke DeepSeek kalo gagal
+    busy=1; face('MIKIR...','#fc0');
+    sendAPI('hasil pencarian untuk: '+q+'. Jawab singkat aja').then(function(r){onAI(r);});
+   }
+  });
   return;
  }
 
