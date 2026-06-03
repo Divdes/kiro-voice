@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>KIRO DEBUG</title>
+<style>
+*{margin:0;padding:0}
+body{background:#111;color:#0f0;font-family:Courier,monospace;padding:20px}
+.box{background:#000;border:1px solid #0f0;padding:15px;margin:10px 0;max-height:200px;overflow-y:auto}
+button{background:transparent;color:#0f0;border:2px solid #0f0;padding:15px;font-size:18px;width:100%;margin:5px 0}
+</style>
+</head>
+<body>
+<h2>KIRO DIAGNOSTIC v1</h2>
+<div class="box" id="log">Loading...</div>
+<button onclick="lg('test')">TEST TOMBOL</button>
+<button onclick="checkVoice()">CEK VOICE</button>
+<button onclick="checkAPI()">CEK API</button>
+<button onclick="testSTT()">TEST SPEECH-TO-TEXT</button>
+<button onclick="say('Halo Bang, ini Kiro')">TEST SPEAK</button>
+
+<script>
+var lg=document.getElementById('log');
+function log(m){lg.innerHTML+='<br>'+m;lg.scrollTop=lg.scrollHeight;}
+var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+log('Browser: '+navigator.userAgent.substring(0,60));
+log('SpeechRecognition: '+(!!SR));
+log('SpeechSynthesis: '+('speechSynthesis'in window));
+
+function checkVoice(){
+ log('<br>=== CEK VOICE ===');
+ if(SR){
+  var r=new SR();
+  r.lang='id-ID';
+  r.continuous=false;r.interimResults=false;
+  r.onstart=function(){log('rec.start() BERHASIL');};
+  r.onerror=function(e){log('ONERROR: '+e.error);};
+  r.onresult=function(e){
+   var t=e.results[e.results.length-1][0].transcript;
+   log('HASIL: "'+t+'"');
+  };
+  r.onend=function(){log('rec.onend (stopped)');};
+  try{
+   log('Mencoba rec.start()...');
+   r.start();
+   log('rec.start() dipanggil');
+   setTimeout(function(){log('Menunggu 3 detik...');},3000);
+   setTimeout(function(){
+    log('8 detik berlalu. Stop rec...');
+    try{r.stop();}catch(e){}
+   },8000);
+  }catch(e){log('ERROR start: '+e.message);}
+ }else log('No SpeechRecognition');
+}
+
+function checkAPI(){
+ log('<br>=== CEK API DEEPSEEK ===');
+ var d=JSON.stringify({model:'deepseek-chat',messages:[{role:'user',content:'bilang halo'}],max_tokens:50});
+ fetch('https://api.deepseek.com/v1/chat/completions',{
+  method:'POST',
+  headers:{'Content-Type':'application/json','Authorization':'Bearer sk-e6063277741f42f7a3df40a2896de212'},
+  body:d
+ }).then(function(r){
+  log('API status: '+r.status);
+  return r.json();
+ }).then(function(j){
+  log('API OK: '+(j.choices&&j.choices[0]?j.choices[0].message.content.substring(0,50):'no choices'));
+ }).catch(function(e){log('API ERROR: '+e.message);});
+}
+
+function testSTT(){
+ log('<br>=== TEST SPEECH-TO-TEXT ===');
+ if(!SR){log('Tidak support');return;}
+ var r=new SR();
+ r.lang='id-ID';
+ r.continuous=true;r.interimResults=true;
+ r.onresult=function(e){
+  for(var i=e.resultIndex;i<e.results.length;i++){
+   var t=e.results[i][0].transcript;
+   if(e.results[i].isFinal)log('FINAL: '+t);
+   else log('interim: '+t.substring(0,30));
+  }
+ };
+ r.onerror=function(e){log('STT ERR: '+e.error);};
+ r.start();
+ log('STT dimulai. Bicara...');
+}
+
+function say(t){
+ var u=new SpeechSynthesisUtterance(t);
+ u.lang='id-ID';
+ u.onstart=function(){log('TTS: berbicara...');};
+ u.onend=function(){log('TTS: selesai');};
+ u.onerror=function(e){log('TTS ERR: '+e.error);};
+ window.speechSynthesis.speak(u);
+}
+</script>
+</body>
+</html>
