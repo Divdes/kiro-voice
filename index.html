@@ -54,7 +54,7 @@ var URL='https://api.deepseek.com/v1/chat/completions';
 // PROMPT BIKIN NATURAL BANGET
 var SYS='Kamu Kiro, asisten Bang Giri. Ngomong kaya temen ngobrol. Singkat, santai, kadang becanda. Panggil Bang. JANGAN pake emoji, jangan kaku, jangan kayak CS. Contoh cara ngomong: "Halo Bang, ada apa nih?" bukan "Ada yang bisa saya bantu?".';
 
-var busy=0,rec=null;
+var busy=0,rec=null,TTS_URL='https://20d748cb583b86d3-125-165-190-79.serveousercontent.com/tts?text=';
 
 function L(m,c){lg.innerHTML+='<br><span class="'+(c||'s')+'">> </span>'+m;lg.scrollTop=lg.scrollHeight;}
 function face(s,c){st.innerText=s;st.style.color=c;st.style.borderColor=c;}
@@ -71,15 +71,13 @@ async function sendAPI(t){
  }catch(e){L('API error','e');return 'Maaf Bang, lagi error';}
 }
 
+function playAudio(b64){var a=new Audio('data:audio/mp3;base64,'+b64);a.onended=function(){busy=0;face('SIAP','#0f0');};a.onerror=function(){busy=0;face('SIAP','#0f0');};a.play();}
+
 function speak(t){
  var ct=t.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu,'').replace(/[_#*`\n\r]/g,' ');
  if(!ct.trim())ct='Tidak ada respon Bang.';
- window.speechSynthesis.cancel();
- var u=new SpeechSynthesisUtterance(ct);
- u.lang='id-ID';
- u.onend=function(){busy=0;face('SIAP','#0f0');};
- u.onerror=function(){busy=0;face('SIAP','#0f0');};
- window.speechSynthesis.speak(u);
+ face('KIRO BICARA (Andrew)','#0ff');
+ fetch(TTS_URL+encodeURIComponent(ct)).then(function(r){return r.json();}).then(function(d){playAudio(d.audio);}).catch(function(){L('Relay mati, fallback HP','y');window.speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(ct);u.lang='id-ID';u.onend=function(){busy=0;face('SIAP','#0f0');};u.onerror=function(){busy=0;face('SIAP','#0f0');};window.speechSynthesis.speak(u);});
 }
 
 function onAI(reply){
