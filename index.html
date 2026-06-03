@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
@@ -36,7 +36,7 @@ canvas{position:absolute;top:0;left:0;z-index:1;opacity:0.3;pointer-events:none}
 <script>
 var cv=document.getElementById('cv'),cx=cv.getContext('2d');
 cv.width=innerWidth;cv.height=innerHeight;
-var ch='アイウエオ0123456789XYZ',fs=10,cc=cv.width/fs,d=[];
+var ch='ã‚¢ã‚¤ã‚¦ã‚¨ã‚ª0123456789XYZ',fs=10,cc=cv.width/fs,d=[];
 for(var i=0;i<cc;i++)d[i]=1;
 setInterval(function(){
  cx.fillStyle='rgba(0,0,0,0.05)';cx.fillRect(0,0,cv.width,cv.height);
@@ -47,7 +47,7 @@ setInterval(function(){
 var st=document.getElementById('st'),lg=document.getElementById('lg'),b=document.getElementById('b');
 var KEY='sk-e6063277741f42f7a3df40a2896de212';
 var URL='https://api.deepseek.com/v1/chat/completions';
-var SYS='Kamu Kiro, asisten Bang Giri. Panggil Bang. Jawab natural seperti ngobrol teman. Santai, hangat, suka bercanda. JANGAN kaku. JANGAN emoji. JANGAN tanya adaYangBisaDibantu.';
+var SYS='Kamu Kiro, asisten Bang Giri. Panggil Bang. Jawab natural seperti ngobrol teman. Santai, hangat, suka bercanda. JANGAN kaku. JANGAN emoji. Jangan pake kata-kata sales. Jangan tanya ada yang bisa dibantu.';
 var busy=0,rec=null,txtInput=null;
 
 function L(m,cls){
