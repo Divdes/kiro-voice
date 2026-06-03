@@ -13,7 +13,7 @@ canvas{position:absolute;top:0;left:0;z-index:1;opacity:0.3;pointer-events:none}
 .hdr{text-align:center;font-size:0.7rem;letter-spacing:3px;text-shadow:0 0 5px var(--b);margin-bottom:5px}
 .st{border:1px solid var(--b);padding:6px 12px;background:rgba(0,20,0,0.7);font-size:0.7rem;font-weight:bold;letter-spacing:1px;box-shadow:0 0 10px rgba(0,255,65,0.3);text-align:center;margin-bottom:5px}
 .lg{width:100%;flex:1;background:rgba(0,0,0,0.85);border-left:2px solid var(--b);padding:5px 8px;font-size:0.6rem;color:#aaa;overflow-y:auto;line-height:1.2;white-space:pre-wrap;word-break:break-all}
-.lg .s{color:var(--b)} .lg .e{color:#f44} .lg .b{color:#f44} .lg .g{color:var(--b)} .lg .y{color:#ff0} .lg .a{color:#0ff}
+.lg .s{color:var(--b)} .lg .e{color:#f44} .lg .y{color:#ff0} .lg .a{color:#0ff}
 #b{width:100%;padding:12px;margin-top:5px;background:transparent;color:var(--b);border:2px solid var(--b);font-size:0.9rem;font-weight:bold;letter-spacing:3px;cursor:pointer;text-transform:uppercase;z-index:999}
 #b:active{background:var(--b);color:#000}
 .inp{width:100%;display:flex;gap:5px;margin-top:5px}
@@ -56,7 +56,7 @@ var SYS='Kamu Kiro, asisten Bang Giri. Gaya bicara: tenang, percaya diri, elegan
 
 var busy=0,rec=null,TTS_URL='https://kirotts.loca.lt/tts?text=';
 
-function L(m,c){lg.innerHTML+='<br><span class="'+(c||'s')+'">> </span>'+m;lg.scrollTop=lg.scrollHeight;}
+function L(t,c){var p='<br>';if(c=='b')p+='<span style="color:#f44">> </span>';else if(c=='g')p+='<span style="color:#0f0">> </span>';else p+='<span style="color:'+(c=='s'?'#0f0':'#0ff')+'">> </span>';lg.innerHTML+=p+t;lg.scrollTop=lg.scrollHeight;}
 function face(s,c){st.innerText=s;st.style.color=c;st.style.borderColor=c;}
 
 async function sendAPI(t){
