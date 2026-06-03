@@ -13,7 +13,7 @@ canvas{position:absolute;top:0;left:0;z-index:1;opacity:0.3;pointer-events:none}
 .hdr{text-align:center;font-size:0.7rem;letter-spacing:3px;text-shadow:0 0 5px var(--b);margin-bottom:5px}
 .st{border:1px solid var(--b);padding:6px 12px;background:rgba(0,20,0,0.7);font-size:0.7rem;font-weight:bold;letter-spacing:1px;box-shadow:0 0 10px rgba(0,255,65,0.3);text-align:center;margin-bottom:5px}
 .lg{width:100%;flex:1;background:rgba(0,0,0,0.85);border-left:2px solid var(--b);padding:5px 8px;font-size:0.6rem;color:#aaa;overflow-y:auto;line-height:1.2;white-space:pre-wrap;word-break:break-all}
-.lg .s{color:var(--b)} .lg .e{color:#f44} .lg .y{color:#ff0} .lg .a{color:#0ff}
+.lg .s{color:var(--b)} .lg .e{color:#f44} .lg .b{color:#f44} .lg .g{color:var(--b)} .lg .y{color:#ff0} .lg .a{color:#0ff}
 #b{width:100%;padding:12px;margin-top:5px;background:transparent;color:var(--b);border:2px solid var(--b);font-size:0.9rem;font-weight:bold;letter-spacing:3px;cursor:pointer;text-transform:uppercase;z-index:999}
 #b:active{background:var(--b);color:#000}
 .inp{width:100%;display:flex;gap:5px;margin-top:5px}
@@ -82,7 +82,7 @@ function speak(t){
 
 function onAI(reply){
  var clean=reply.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu,'');
- L('[Kiro] '+clean,'a');
+ L('[Kiro] '+clean,'g');
  face('KIRO BICARA','#0ff');
  speak(clean);
 }
@@ -90,7 +90,7 @@ function onAI(reply){
 function processText(t){
  if(!t.trim()||busy)return;
  busy=1;
- L('[Bang] '+t,'y');
+ L('[Bang] '+t,'b');
  face('MIKIR...','#fc0');
  sendAPI(t).then(function(r){onAI(r);});
 }
