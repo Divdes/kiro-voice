@@ -104,12 +104,11 @@ async function getKurs(){
 
 async function cariGoogle(q){
  try{
-  var r=await fetch('https://api.allorigins.win/raw?url=https://www.google.com/search?q='+encodeURIComponent(q));
-  var t=await r.text();
-  var m=t.match(/<div[^>]*class="[^"]*BNeawe[^"]*"[^>]*>([^<]+)<\/div>/);
-  if(m&&m[1])return m[1].trim().slice(0,200);
-  var m2=t.match(/<span[^>]*class="[^"]*BNeawe[^"]*"[^>]*>([^<]+)<\/span>/);
-  if(m2&&m2[1])return m2[1].trim().slice(0,200);
+  var r=await fetch('https://api.duckduckgo.com/?q='+encodeURIComponent(q)+'&format=json&no_html=1');
+  var d=await r.json();
+  if(d.AbstractText)return d.AbstractText.slice(0,300);
+  if(d.RelatedTopics&&d.RelatedTopics[0]&&d.RelatedTopics[0].Text)return d.RelatedTopics[0].Text.slice(0,300);
+  if(d.Answer)return d.Answer;
   return null;
  }catch(e){return null;}
 }
