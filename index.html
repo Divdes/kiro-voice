@@ -104,9 +104,15 @@ async function getKurs(){
 
 async function getCuaca(){
  try{
-  var r=await fetch('https://wttr.in/?format=%C,+suhu+%t,+angin+%w&lang=id');
-  var t=await r.text();
-  return t.trim();
+  var r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=-6.2146&longitude=106.8451&current_weather=true');
+  var d=await r.json();
+  var s=d.current_weather.temperature;
+  var cd='Cerah';
+  if(s>33)cd='Panas';
+  else if(s>28)cd='Hangat';
+  else if(s>23)cd='Cerah Bang';
+  else cd='Sejuk Bang';
+  return cd+', suhu '+s+' derajat Celcius';
  }catch(e){return null;}
 }
 
