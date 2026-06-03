@@ -112,6 +112,21 @@ function onAI(reply){
 
 function processText(t){
  if(!t.trim()||busy)return;
+ var tl=t.toLowerCase().trim();
+ if(tl.match(/hidupin|nyalakan|nyalain pc|komputer/)){
+  L('[Bang] '+t,'b');
+  L('[Kiro] Siap, Bang. Buka Google Assistant ya.','g');
+  L('<br><a href="googleassistant://send?text=Hidupkan%20komputer" style="color:#0f0;font-size:0.8rem">[ HIDUPKAN KOMPUTER ]</a><br><small style="color:#888">Atau bilang: Hey Google, hidupkan komputer</small>','s');
+  speak('Siap Bang. Buka Google Assistant atau bilang Hey Google, hidupkan komputer.');
+  return;
+ }
+ if(tl.match(/matiin|matikan pc|komputer|shutdown/)){
+  L('[Bang] '+t,'b');
+  L('[Kiro] Siap, Bang. Buka Google Assistant ya.','g');
+  L('<br><a href="googleassistant://send?text=Matikan%20komputer" style="color:#f44;font-size:0.8rem">[ MATIKAN KOMPUTER ]</a><br><small style="color:#888">Atau bilang: Hey Google, matikan komputer</small>','s');
+  speak('Siap Bang. Buka Google Assistant atau bilang Hey Google, matikan komputer.');
+  return;
+ }
  busy=1;
  L('[Bang] '+t,'b');
  face('MIKIR...','#fc0');
