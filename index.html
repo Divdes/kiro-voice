@@ -91,7 +91,7 @@ function startRec(){
  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
  rec=new SR();
  L('SpeechRecognition: objek baru dibuat','s');
- rec.continuous=false;rec.interimResults=false;rec.lang='id-ID';
+ rec.continuous=true;rec.interimResults=true;rec.lang='id-ID';
  
  rec.onstart=function(){
   L('rec.onstart: microphone aktif, mulai dengar','s');
@@ -99,17 +99,20 @@ function startRec(){
  };
  
  rec.onresult=function(e){
-  var t=e.results[e.results.length-1][0].transcript;
-  L('rec.onresult: transcript="'+t+'" final='+e.results[e.results.length-1].isFinal,'y');
-  if(t.trim()&&!busy){
-   busy=1;
-   L('=== PROSES SUARA ===','s');
-   face('MIKIR...','#ffcc00');
-   try{rec.stop();L('rec.stop: ok','s');}catch(e){L('rec.stop err: '+e.message,'e');}
-   sendAPI(t).then(function(reply){
-    ai(reply);
-    speak(reply);
-   });
+  for(var i=e.resultIndex;i<e.results.length;i++){
+   var t=e.results[i][0].transcript;
+   var f=e.results[i].isFinal?'FINAL':'interim';
+   L('rec.onresult['+i+']: '+f+' "'+t+'"','y');
+   if(f=='FINAL'&&t.trim()&&!busy){
+    busy=1;
+    L('=== PROSES SUARA ===','s');
+    face('MIKIR...','#ffcc00');
+    try{rec.stop();L('rec.stop: ok','s');}catch(e){L('rec.stop err: '+e.message,'e');}
+    sendAPI(t).then(function(reply){
+     ai(reply);
+     speak(reply);
+    });
+   }
   }
  };
  
