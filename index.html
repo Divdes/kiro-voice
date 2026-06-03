@@ -23,13 +23,29 @@ canvas{position:absolute;top:0;left:0;z-index:1;opacity:0.3;pointer-events:none}
 .inp input{flex:1;padding:10px;background:#000;color:var(--b);border:1px solid var(--b);font-size:14px;outline:none;font-family:Courier,monospace;box-sizing:border-box}
 .inp button{padding:10px 15px;background:transparent;color:var(--b);border:2px solid var(--b);font-size:14px;font-weight:bold;cursor:pointer;box-sizing:border-box}
 .inp button:active{background:var(--b);color:#000}
+.pw{display:flex;gap:4px;margin-top:10px}
+.pw input{flex:1;padding:12px;background:#000;color:var(--b);border:1px solid var(--b);font-size:16px;outline:none;font-family:Courier,monospace;text-align:center;letter-spacing:4px}
+.pw button{padding:12px 20px;background:transparent;color:var(--b);border:2px solid var(--b);font-size:16px;font-weight:bold;cursor:pointer}
+.pw button:active{background:var(--b);color:#000}
+#lk{position:relative;z-index:99;width:100%;min-height:100vh;height:auto;padding:8px;display:flex;flex-direction:column;justify-content:center;align-items:center;background:rgba(0,0,0,0.4);box-sizing:border-box}
 </style>
 </head>
 <body>
 <canvas id="cv"></canvas>
 <div class="ui">
 <div class="hdr"><span class="s">[ KIRO v9.9 ]</span></div>
-<div class="st" id="st">SIGNAL_STDBY</div>
+<div id="lk">
+<div class="hdr"><span class="s">[ MASUKAN KUNCI ]</span></div>
+<div class="st" id="st" style="margin-bottom:0">TERKUNCI</div>
+<div class="pw">
+<input id="pk" type="password" placeholder="Masukan password..." autocomplete="off">
+<button id="bk">BUKA</button>
+</div>
+<div id="er" style="color:#f44;font-size:0.65rem;text-align:center;margin-top:8px;display:none">Password salah!</div>
+</div>
+<div class="ui" id="ui" style="display:none">
+<div class="hdr"><span class="s">[ KIRO v9.9 ]</span></div>
+<div class="st" id="st2">SIGNAL_STDBY</div>
 <div class="lg" id="lg"><span class="s">Tap tombol buat ngomong atau ketik di bawah.</span></div>
 <button id="b">ENTER & NGOMONG</button>
 <div class="inp">
@@ -49,8 +65,13 @@ setInterval(function(){
  for(var i=0;i<d.length;i++){cx.fillText(ch[Math.floor(Math.random()*ch.length)],i*fs,d[i]*fs);if(d[i]*fs>cv.height&&Math.random()>0.975)d[i]=0;d[i]++}
 },30);
 
-var st=document.getElementById('st'),lg=document.getElementById('lg'),b=document.getElementById('b');
+var pw='kiro123';
+var st=document.getElementById('st2'),lg=document.getElementById('lg'),b=document.getElementById('b');
 var tx=document.getElementById('tx'),tk=document.getElementById('tk');
+var pk=document.getElementById('pk'),bk=document.getElementById('bk'),lk=document.getElementById('lk'),ui_el=document.getElementById('ui'),er=document.getElementById('er');
+
+bk.onclick=function(){if(pk.value===pw){lk.style.display='none';ui_el.style.display='flex';}else{er.style.display='block';pk.value='';pk.focus();}};
+pk.onkeydown=function(e){if(e.key=='Enter')bk.click();};
 var KEY='sk-e6063277741f42f7a3df40a2896de212';
 var URL='https://api.deepseek.com/v1/chat/completions';
 
@@ -136,7 +157,8 @@ tx.onkeydown=function(e){
  if(e.key=='Enter'){tk.click();}
 };
 
-L('Halo Bang! Ketik atau tap ENTER & NGOMONG.','s');
+
 </script>
 </body>
 </html>
+
