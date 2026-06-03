@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-<title>KIRO v7</title>
+<title>KIRO</title>
 <style>
 :root{--b:#00ff41}
 *{margin:0;padding:0}
@@ -13,30 +13,32 @@ canvas{position:absolute;top:0;left:0;z-index:1;opacity:0.3;pointer-events:none}
 .hdr{text-align:center;font-size:0.7rem;letter-spacing:3px;text-shadow:0 0 5px var(--b);margin-bottom:5px}
 .st{border:1px solid var(--b);padding:6px 12px;background:rgba(0,20,0,0.7);font-size:0.7rem;font-weight:bold;letter-spacing:1px;box-shadow:0 0 10px rgba(0,255,65,0.3);text-align:center;margin-bottom:5px}
 .lg{width:100%;flex:1;background:rgba(0,0,0,0.85);border-left:2px solid var(--b);padding:5px 8px;font-size:0.6rem;color:#aaa;overflow-y:auto;line-height:1.2;white-space:pre-wrap;word-break:break-all}
-.lg .s{color:var(--b)}
-.lg .e{color:#f44}
-.lg .y{color:#ff0}
-.lg .a{color:#0ff}
+.lg .s{color:var(--b)} .lg .e{color:#f44} .lg .y{color:#ff0} .lg .a{color:#0ff}
 #b{width:100%;padding:12px;margin-top:5px;background:transparent;color:var(--b);border:2px solid var(--b);font-size:0.9rem;font-weight:bold;letter-spacing:3px;cursor:pointer;text-transform:uppercase;z-index:999}
 #b:active{background:var(--b);color:#000}
+.inp{width:100%;display:flex;gap:5px;margin-top:5px}
+.inp input{flex:1;padding:10px;background:#000;color:var(--b);border:1px solid var(--b);font-size:14px;outline:none;font-family:Courier,monospace}
+.inp button{padding:10px 15px;background:transparent;color:var(--b);border:2px solid var(--b);font-size:14px;font-weight:bold;cursor:pointer}
+.inp button:active{background:var(--b);color:#000}
 </style>
 </head>
 <body>
 <canvas id="cv"></canvas>
 <div class="ui">
-<div class="hdr"><span class="s">[ KIRO v7 - DEBUG LIVE ]</span></div>
+<div class="hdr"><span class="s">[ KIRO v8 ]</span></div>
 <div class="st" id="st">SIGNAL_STDBY</div>
-<div class="lg" id="lg"><span class="s">Tap tombol, Kiro dengerin, Kiro jawab.</span></div>
+<div class="lg" id="lg"><span class="s">Tap tombol buat ngomong atau ketik di bawah.</span></div>
 <button id="b">ENTER & NGOMONG</button>
-<div id="txtWrap" style="display:none;width:100%;margin-top:5px">
-<input id="txt" type="text" placeholder="Ketik pesan..." style="width:80%;padding:10px;background:#000;color:#0f0;border:1px solid #0f0;font-size:14px;outline:none">
-<button id="snd" style="width:18%;padding:10px;background:transparent;color:#0f0;border:1px solid #0f0;font-size:14px">KIRIM</button>
+<div class="inp">
+<input id="tx" type="text" placeholder="Ketik pesan...">
+<button id="tk">KIRIM</button>
 </div>
 </div>
 <script>
+// Matrix rain
 var cv=document.getElementById('cv'),cx=cv.getContext('2d');
 cv.width=innerWidth;cv.height=innerHeight;
-var ch='ã‚¢ã‚¤ã‚¦ã‚¨ã‚ª0123456789XYZ',fs=10,cc=cv.width/fs,d=[];
+var ch='アイウエオ0123456789XYZ',fs=10,cc=cv.width/fs,d=[];
 for(var i=0;i<cc;i++)d[i]=1;
 setInterval(function(){
  cx.fillStyle='rgba(0,0,0,0.05)';cx.fillRect(0,0,cv.width,cv.height);
@@ -45,136 +47,95 @@ setInterval(function(){
 },30);
 
 var st=document.getElementById('st'),lg=document.getElementById('lg'),b=document.getElementById('b');
+var tx=document.getElementById('tx'),tk=document.getElementById('tk');
 var KEY='sk-e6063277741f42f7a3df40a2896de212';
 var URL='https://api.deepseek.com/v1/chat/completions';
-var SYS='Kamu Kiro, asisten Bang Giri. Panggil Bang. Jawab natural seperti ngobrol teman. Santai, hangat, suka bercanda. JANGAN kaku. JANGAN emoji. Jangan pake kata-kata sales. Jangan tanya ada yang bisa dibantu.';
-var busy=0,rec=null,txtInput=null;
 
-function L(m,cls){
- var d=new Date();
- var t=('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)+':'+('0'+d.getSeconds()).slice(-2);
- lg.innerHTML+='\n<span class="'+(cls||'s')+'">['+t+']> </span>'+m;
- lg.scrollTop=lg.scrollHeight;
-}
+// PROMPT BIKIN NATURAL BANGET
+var SYS='Kamu Kiro, asisten Bang Giri. Ngomong kaya temen ngobrol. Singkat, santai, kadang becanda. Panggil Bang. JANGAN pake emoji, jangan kaku, jangan kayak CS. Contoh cara ngomong: "Halo Bang, ada apa nih?" bukan "Ada yang bisa saya bantu?".';
+
+var busy=0,rec=null;
+
+function L(m,c){lg.innerHTML+='<br><span class="'+(c||'s')+'">> </span>'+m;lg.scrollTop=lg.scrollHeight;}
 function face(s,c){st.innerText=s;st.style.color=c;st.style.borderColor=c;}
 
 async function sendAPI(t){
- L('DeepSeek: mengirim "'+t.substring(0,30)+'..."','y');
  try{
   var r=await fetch(URL,{
    method:'POST',
    headers:{'Content-Type':'application/json','Authorization':'Bearer '+KEY},
    body:JSON.stringify({model:'deepseek-chat',messages:[{role:'system',content:SYS},{role:'user',content:t}],max_tokens:300})
   });
-  L('DeepSeek: status '+r.status,'y');
   var d=await r.json();
-  var reply=d.choices&&d.choices[0]?d.choices[0].message.content:'Error';
-  L('DeepSeek: reply '+reply.substring(0,30),'y');
-  return reply;
- }catch(e){
-  L('DeepSeek ERROR: '+e.message,'e');
-  return 'Jalur error';
- }
+  return d.choices&&d.choices[0]?d.choices[0].message.content:'Error';
+ }catch(e){L('API error','e');return 'Maaf Bang, lagi error';}
 }
 
 function speak(t){
  var ct=t.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu,'').replace(/[_#*`\n\r]/g,' ');
- L('TTS: "'+(ct.substring(0,30))+'..."','a');
+ if(!ct.trim())ct='Tidak ada respon Bang.';
+ window.speechSynthesis.cancel();
  var u=new SpeechSynthesisUtterance(ct);
  u.lang='id-ID';
- u.onstart=function(){L('TTS: mulai bicara','a');face('KIRO BICARA','#0ff');};
- u.onend=function(){L('TTS: selesai','a');busy=0;face('SIAP','#0f0');};
- u.onerror=function(e){L('TTS ERROR: '+e.error,'e');busy=0;face('SIGNAL_STDBY','#0f0');};
+ u.onend=function(){busy=0;face('SIAP','#0f0');};
+ u.onerror=function(){busy=0;face('SIAP','#0f0');};
  window.speechSynthesis.speak(u);
 }
 
-function startRec(){
- if(!('webkitSpeechRecognition'in window)&&!('SpeechRecognition'in window)){
-  L('BROWSER: tidak support SpeechRecognition','e');return;
- }
+function onAI(reply){
+ var clean=reply.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu,'');
+ L('[Kiro] '+clean,'a');
+ face('KIRO BICARA','#0ff');
+ speak(clean);
+}
+
+function processText(t){
+ if(!t.trim()||busy)return;
+ busy=1;
+ L('[Bang] '+t,'y');
+ face('MIKIR...','#fc0');
+ sendAPI(t).then(function(r){onAI(r);});
+}
+
+function startVoice(){
  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SR){L('Voice gak support','e');return;}
  rec=new SR();
- L('SpeechRecognition: objek baru dibuat','s');
  rec.continuous=true;rec.interimResults=true;rec.lang='id-ID';
- 
- rec.onstart=function(){
-  L('rec.onstart: microphone aktif, mulai dengar','s');
-  face('DENGAR...','#ff0');
- };
- 
+ rec.onstart=function(){face('DENGAR...','#ff0');L('Mic aktif, silahkan ngomong','s');};
  rec.onresult=function(e){
   for(var i=e.resultIndex;i<e.results.length;i++){
    var t=e.results[i][0].transcript;
-   var f=e.results[i].isFinal?'FINAL':'interim';
-   L('rec.onresult['+i+']: '+f+' "'+t+'"','y');
-   if(f=='FINAL'&&t.trim()&&!busy){
-    busy=1;
-    L('=== PROSES SUARA ===','s');
-    face('MIKIR...','#ffcc00');
-    try{rec.stop();L('rec.stop: ok','s');}catch(e){L('rec.stop err: '+e.message,'e');}
-    sendAPI(t).then(function(reply){
-     ai(reply);
-     speak(reply);
-    });
+   if(e.results[i].isFinal&&t.trim()){
+    L('[Dengar] '+t,'y');
+    processText(t);
    }
   }
  };
- 
- rec.onerror=function(e){
-  L('rec.onerror: '+e.error+(e.message?': '+e.message:''),'e');
-  if(!busy){face('SIGNAL_STDBY','#0f0');}
- };
- 
- rec.onend=function(){
-  L('rec.onend: microphone dimatikan','s');
-  if(!busy){face('SIGNAL_STDBY','#0f0');}
- };
- 
- L('rec.start: memanggil...','s');
- try{
-  rec.start();
-  L('rec.start: sukses dipanggil','s');
- }catch(e){
-  L('rec.start CRASH: '+e.message+'\\n'+e.stack,'e');
-  face('SIGNAL_STDBY','#0f0');
- }
+ rec.onerror=function(e){if(e.error!='no-speech'&&e.error!='aborted')L('Voice: '+e.error,'e');if(!busy)face('SIAP','#0f0');};
+ rec.onend=function(){if(!busy)face('SIAP','#0f0');};
+ try{rec.start();}catch(e){L('Mulai voice gagal','e');face('SIAP','#0f0');}
 }
-
-function ai(reply){
- var clean=reply.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu,'');
- L('[KIRO] '+clean.substring(0,100),'a');
-}
-
-setTimeout(function(){txtInput=document.getElementById('txt');document.getElementById('snd').onclick=function(){if(busy||!txtInput.value.trim())return;var t=txtInput.value;txtInput.value='';you(t);busy=1;face('MIKIR...','#ffcc00');sendAPI(t).then(function(reply){ai(reply);face('KIRO BICARA','#00ffff');speak(reply);});};},100);
 
 b.onclick=function(){
- if(busy){L('Tombol ditekan tapi busy','y');return;}
- L('=== TOMBOL DITEKAN ===','s');
- navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
-  L('getUserMedia: izin mic dapat','s');
-  stream.getTracks().forEach(function(t){t.stop();});
-  L('getUserMedia: track ditutup','s');
-  startRec();
- }).catch(function(e){
-  L('getUserMedia GAGAL: '+e.message,'e');
- });
+ if(busy)return;
+ navigator.mediaDevices.getUserMedia({audio:true}).then(function(s){
+  s.getTracks().forEach(function(t){t.stop();});
+  startVoice();
+ }).catch(function(e){L('Mic ditolak: '+e.message,'e');});
 };
 
-window.onerror=function(m,src,line,col,err){
- L('GLOBAL ERROR: '+(m||'')+' di '+line+':'+col,'e');
- return true;
+tk.onclick=function(){
+ var t=tx.value.trim();
+ tx.value='';
+ processText(t);
 };
 
-L('HTML loaded: '+navigator.userAgent.substring(0,50),'s');
-var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-L('SpeechRecognition available: '+(!!SR),'s');
-L('SpeechSynthesis available: '+('speechSynthesis'in window),'s');
-L('SELESAI INIT. Tekan tombol.','s');
-// Cek iPhone
-if(/iPhone|iPad|iPod/i.test(navigator.userAgent)){
- L('iPhone terdeteksi - aktifkan text input','y');
- document.getElementById('txtWrap').style.display='flex';
-}
+tx.onkeydown=function(e){
+ if(e.key=='Enter'){tk.click();}
+};
+
+L('Halo Bang! Ketik atau tap ENTER & NGOMONG.','s');
 </script>
 </body>
 </html>
