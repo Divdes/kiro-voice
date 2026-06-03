@@ -75,7 +75,7 @@ var KEY='sk-e6063277741f42f7a3df40a2896de212';
 var URL='https://api.deepseek.com/v1/chat/completions';
 
 // PROMPT BIKIN NATURAL BANGET
-var SYS='Kamu Kiro, asisten Bang Giri. Gaya bicara: tenang, percaya diri, elegan kayak asisten pribadi (Jarvis vibe). Ngomong santai tapi berwibawa, panggil Bang. ATURAN: (1) JANGAN pake emoji, (2) JANGAN pake kata "bantuan", "layanan", "silakan", "dengan senang hati", "ada lagi yang bisa", (3) JANGAN nanya balik terus. CONTOH: Kalo Bang bilang "Capek" jawab "Capek ya Bang? Istirahat dulu". Kalo Bang nanya sesuatu, jawab langsung, singkat, to the point. Gak usah basa-basi. Vibe: "Sudah saya siapkan Bang" bukan "Baik, saya akan siapkan untuk Anda". Ngerti?';
+var SYS='Kamu Kiro, asisten Bang Giri. Gaya bicara Jarvis: tenang, percaya diri, elegan. Santai tapi berwibawa, panggil Bang. ATURAN: (1) JANGAN pake emoji, (2) JANGAN pake kata "bantuan", "layanan", "silakan", "dengan senang hati", "ada lagi", (3) JANGAN nanya balik terus. Kalo Bang nanya kurs dolar, cuaca, hidupin/matiin PC — langsung jawab singkat aja, detail udah di-urus di fungsi lain. Ngerti?';
 
 var busy=0,rec=null,TTS_URL='https://kirotts.loca.lt/tts?text=';
 
@@ -94,6 +94,22 @@ async function sendAPI(t){
  }catch(e){L('API error','e');return 'Maaf Bang, lagi error';}
 }
 
+async function getKurs(){
+ try{
+  var r=await fetch('https://open.er-api.com/v6/latest/USD');
+  var d=await r.json();
+  return d.rates.IDR;
+ }catch(e){return null;}
+}
+
+async function getCuaca(){
+ try{
+  var r=await fetch('https://wttr.in/?format=%C+%t+%w');
+  var t=await r.text();
+  return t.trim();
+ }catch(e){return null;}
+}
+
 function playAudio(b64){var a=new Audio('data:audio/mp3;base64,'+b64);a.onended=function(){busy=0;face('SIAP','#0f0');};a.onerror=function(){busy=0;face('SIAP','#0f0');};a.play();}
 
 function speak(t){
@@ -110,23 +126,43 @@ function onAI(reply){
  speak(clean);
 }
 
-function processText(t){
+
+
+async function processText(t){
  if(!t.trim()||busy)return;
  var tl=t.toLowerCase().trim();
- if(tl.match(/hidupin|nyalakan|nyalain pc|komputer/)){
-  L('[Bang] '+t,'b');
-  L('[Kiro] Siap, Bang. Buka Google Assistant ya.','g');
-  L('<br><a href="googleassistant://send?text=Hidupkan%20komputer" style="color:#0f0;font-size:0.8rem">[ HIDUPKAN KOMPUTER ]</a><br><small style="color:#888">Atau bilang: Hey Google, hidupkan komputer</small>','s');
-  speak('Siap Bang. Buka Google Assistant atau bilang Hey Google, hidupkan komputer.');
+
+ // PC Control
+ if(tl.match(/hidupin|nyalakan PC|nyalain PC/)){
+  L('[Bang] '+t,'b'); face('SIAP','#0f0');
+  L('[Kiro] Siap Bang. Buka Google Assistant.','g');
+  L('<br><a href="googleassistant://send?text=turn+on+komputer" style="color:#0f0;font-size:0.8rem">[ HIDUPKAN KOMPUTER ]</a>','s');
+  speak('Siap Bang. Buka Google Assistant.');
   return;
  }
- if(tl.match(/matiin|matikan pc|komputer|shutdown/)){
-  L('[Bang] '+t,'b');
-  L('[Kiro] Siap, Bang. Buka Google Assistant ya.','g');
-  L('<br><a href="googleassistant://send?text=Matikan%20komputer" style="color:#f44;font-size:0.8rem">[ MATIKAN KOMPUTER ]</a><br><small style="color:#888">Atau bilang: Hey Google, matikan komputer</small>','s');
-  speak('Siap Bang. Buka Google Assistant atau bilang Hey Google, matikan komputer.');
+ if(tl.match(/matiin|matikan PC|shutdown/)){
+  L('[Bang] '+t,'b'); face('SIAP','#0f0');
+  L('[Kiro] Siap Bang. Buka Google Assistant.','g');
+  L('<br><a href="googleassistant://send?text=turn+off+komputer" style="color:#f44;font-size:0.8rem">[ MATIKAN KOMPUTER ]</a>','s');
+  speak('Siap Bang. Buka Google Assistant.');
   return;
  }
+
+ // KURS USD
+ if(tl.match(/kurs|dolar|usd|1 usd|berapa rupiah/)){
+  L('[Bang] '+t,'b'); face('CARi...','#fc0');
+  getKurs().then(function(k){if(k){var msg='1 USD = Rp '+k.toLocaleString('id-ID')+' saat ini Bang.';L('[Kiro] '+msg,'g');speak(msg);}else{L('[Kiro] Gagal ambil kurs, coba lagi.','e');speak('Maaf Bang, lagi error ambil kurs');}});
+  return;
+ }
+
+ // CUACA
+ if(tl.match(/cuaca|panas|hujan|dingin|berapa suhu/)){
+  L('[Bang] '+t,'b'); face('CARi...','#fc0');
+  getCuaca().then(function(c){if(c){var msg='Cuaca sekarang: '+c+' Bang.';L('[Kiro] '+msg,'g');speak(msg);}else{L('[Kiro] Gagal ambil cuaca.','e');speak('Maaf Bang, gagal ambil cuaca');}});
+  return;
+ }
+
+ // Default ke DeepSeek
  busy=1;
  L('[Bang] '+t,'b');
  face('MIKIR...','#fc0');
