@@ -21,7 +21,7 @@ canvas{position:absolute;top:0;left:0;z-index:1;opacity:0.3;pointer-events:none}
 <body>
 <canvas id="cv"></canvas>
 <div class="ui">
-<div class="h">[ KIRO v6.0 ]</div>
+<div class="h">[ KIRO v6.1 ]</div>
 <div class="s" id="st">SIGNAL_STDBY</div>
 <div class="c" id="lg"><span class="a">[SYS]> </span>Tap tombol, ngomong, Kiro jawab.</div>
 <button id="b">ENTER & NGOMONG</button>
@@ -38,12 +38,11 @@ setInterval(function(){
  for(var i=0;i<d.length;i++){cx.fillText(ch[Math.floor(Math.random()*ch.length)],i*fs,d[i]*fs);if(d[i]*fs>cv.height&&Math.random()>0.975)d[i]=0;d[i]++}
 },30);
 
-// Vars
 var st=document.getElementById('st'),lg=document.getElementById('lg'),b=document.getElementById('b');
 var KEY='sk-e6063277741f42f7a3df40a2896de212';
 var URL='https://api.deepseek.com/v1/chat/completions';
 var SYS='Kamu Kiro, asisten Bang Giri. Panggil Bang. Jawab singkat hangat. JANGAN pake emoji.';
-var busy=0,rec=null,micOk=0;
+var busy=0,rec=null,SR=null,micOk=0;
 
 function log(m){lg.innerHTML+='<br><span class="a">[SYS]></span> '+m;lg.scrollTop=lg.scrollHeight;}
 function you(m){lg.innerHTML+='<br><span class="a">[YOU]></span> '+m;lg.scrollTop=lg.scrollHeight;}
@@ -71,21 +70,17 @@ function speak(t){
  window.speechSynthesis.speak(u);
 }
 
-// Init voice dengan pola yang sudah terbukti dari debug
-function initVoice(){
- if(!('webkitSpeechRecognition'in window)&&!('SpeechRecognition'in window)){log('Browser gak support voice');return;}
- var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+function startListening(){
+ if(!SR){log('Browser gak support voice');return;}
  rec=new SR();
  rec.continuous=false;rec.interimResults=false;rec.lang='id-ID';
- rec.onstart=function(){face('DENGAR...','#ff0');};
+ 
  rec.onresult=function(e){
-  if(busy)return;
   var t=e.results[e.results.length-1][0].transcript;
-  if(t.trim()){
+  if(t.trim()&&!busy){
    busy=1;
    face('MIKIR...','#ffcc00');
    you(t);
-   if(rec)rec.stop();
    sendAPI(t).then(function(reply){
     ai(reply);
     face('KIRO BICARA','#00ffff');
@@ -94,26 +89,23 @@ function initVoice(){
   }
  };
  rec.onerror=function(e){
-  log('Voice err: '+e.error);
-  if(!busy)face('SIGNAL_STDBY','#0f0');
+  if(e.error!='no-speech'&&e.error!='aborted')log('Voice err: '+e.error);
+  if(!busy){face('SIGNAL_STDBY','#0f0');}
  };
  rec.onend=function(){
-  if(!busy)face('SIGNAL_STDBY','#0f0');
+  if(!busy){face('SIGNAL_STDBY','#0f0');}
  };
- log('Voice siap');
- micOk=1;
+ try{
+  rec.start();
+  face('DENGAR...','#ff0');
+ }catch(e){log('Start err: '+e.message);face('SIGNAL_STDBY','#0f0');}
 }
+
+SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 
 b.onclick=function(){
  if(busy)return;
- if(!micOk){initVoice();}
- face('DENGAR...','#ff0');
- try{
-  rec.start();
- }catch(e){
-  log('Start err: '+e.message);
-  face('SIGNAL_STDBY','#0f0');
- }
+ startListening();
 };
 
 window.onerror=function(m,s,l,c,e){log('Err: '+(m||''));return true};
