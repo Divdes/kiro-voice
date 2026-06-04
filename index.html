@@ -83,7 +83,7 @@ function L(t,c){var p='<br>';if(c=='b')p+='<b style="color:#ff3333">&gt; </b><sp
 function face(s,c){st.innerText=s;st.style.color=c;st.style.borderColor=c;}
 
 async function sendAPI(t){
- // Pake backend search (PC Bang) - pake search internet!
+ // Pake relay backend (kirim ke Kiro asli via Telegram)
  try{
   var r=await fetch('http://127.0.0.1:8558',{
    method:'POST',
@@ -93,9 +93,9 @@ async function sendAPI(t){
   var d=await r.json();
   if(d.reply)return d.reply;
  }catch(e){
-  // Fallback ke DeepSeek langsung
+  L('Relay offline, pake DeepSeek langsung','y');
  }
- // Fallback langsung kalo backend mati
+ // Fallback ke DeepSeek langsung kalo backend mati
  try{
   var r=await fetch(URL,{
    method:'POST',
