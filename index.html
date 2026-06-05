@@ -84,17 +84,19 @@ function face(s,c){st.innerText=s;st.style.color=c;st.style.borderColor=c;}
 
 async function sendAPI(t){
  // Coba relay via tunnel (bisa dari HP!)
- var TUNNEL='https://kirorelay.loca.lt';
- try{
-  var r=await fetch(TUNNEL,{
-   method:'POST',
-   headers:{'Content-Type':'application/json'},
-   body:JSON.stringify({message:t}),
-   signal:AbortSignal.timeout(8000)
-  });
-  var d=await r.json();
-  if(d.reply&&d.reply!='Pesan diterima.')return d.reply;
- }catch(e){L('Tunnel offline, pake DeepSeek','y');}
+ var TUNNELS=['https://neat-beds-cover.loca.lt','http://127.0.0.1:8558','https://kirorelay.loca.lt'];
+ for(var i=0;i<TUNNELS.length;i++){
+  try{
+   var r=await fetch(TUNNELS[i],{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({message:t}),
+    signal:AbortSignal.timeout(5000)
+   });
+   var d=await r.json();
+   if(d.reply&&d.reply!='Pesan diterima.')return d.reply;
+  }catch(e){}
+ }
  // Fallback ke DeepSeek langsung
  try{
   var r=await fetch(URL,{
