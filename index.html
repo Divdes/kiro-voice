@@ -83,17 +83,18 @@ function L(t,c){var p='<br>';if(c=='b')p+='<b style="color:#ff3333">&gt; </b><sp
 function face(s,c){st.innerText=s;st.style.color=c;st.style.borderColor=c;}
 
 async function sendAPI(t){
- // Coba relay backend dulu (cuma kalo di PC)
+ // Coba relay via tunnel (bisa dari HP!)
+ var TUNNEL='https://kirorelay.loca.lt';
  try{
-  var r=await fetch('http://127.0.0.1:8558',{
+  var r=await fetch(TUNNEL,{
    method:'POST',
    headers:{'Content-Type':'application/json'},
    body:JSON.stringify({message:t}),
-   signal:AbortSignal.timeout(3000)
+   signal:AbortSignal.timeout(8000)
   });
   var d=await r.json();
-  if(d.reply)return d.reply;
- }catch(e){}
+  if(d.reply&&d.reply!='Pesan diterima.')return d.reply;
+ }catch(e){L('Tunnel offline, pake DeepSeek','y');}
  // Fallback ke DeepSeek langsung
  try{
   var r=await fetch(URL,{
