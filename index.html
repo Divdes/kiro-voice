@@ -82,66 +82,50 @@ var busy=0,rec=null,TTS_URL='https://kirotts.loca.lt/tts?text=';
 function L(t,c){var p='<br>';if(c=='b')p+='<b style="color:#ff3333">&gt; </b><span style="color:#ff3333">';else if(c=='g')p+='<b style="color:#00ff41">&gt; </b><span style="color:#00ff41">';else p+='<span style="color:#0ff">';lg.innerHTML+=p+t+'</span>';lg.scrollTop=lg.scrollHeight;}
 function face(s,c){st.innerText=s;st.style.color=c;st.style.borderColor=c;}
 
-var BASE='https://wow-untracked-sepia.ngrok-free.dev';
 
-async function sendAPI(t){
- // Coba ngrok dulu (HTTPS, biar gak mixed content)
- try{
-  var r=await fetch(BASE,{
-   method:'POST',
-   headers:{'Content-Type':'application/json'},
-   body:JSON.stringify({message:t}),
-   signal:AbortSignal.timeout(5000)
-  });
-  var d=await r.json();
-  if(d.reply==='OK'||d.reply===null||d.reply===''){
-   var jwb=await pollJawab(BASE);
-   if(jwb)return jwb;
-  }
-  if(d.reply&&d.reply!='OK')return d.reply;
- }catch(e){}
- // Fallback Tailscale HTTP
- try{
-  var r=await fetch('http://100.118.65.83:8558',{
-   method:'POST', headers:{'Content-Type':'application/json'},
-   body:JSON.stringify({message:t}),
-   signal:AbortSignal.timeout(3000)
-  });
-  var d=await r.json();
-  if(d.reply==='OK'||d.reply===null||d.reply===''){
-   var jwb=await pollJawab('http://100.118.65.83:8558');
-   if(jwb)return jwb;
-  }
-  if(d.reply&&d.reply!='OK')return d.reply;
- }catch(e){}
- // Fallback DeepSeek
- try{
-  var r=await fetch(URL,{
-   method:'POST',
-   headers:{'Content-Type':'application/json','Authorization':'Bearer '+KEY},
-   body:JSON.stringify({model:'deepseek-chat',messages:[{role:'system',content:SYS},{role:'user',content:t}],max_tokens:300})
-  });
-  var d=await r.json();
-  return d.choices&&d.choices[0]?d.choices[0].message.content:'Error';
- }catch(e){L('API error','e');return 'Maaf Bang, lagi error';}
-}
 
-async function pollJawab(baseUrl){
- // Polling GET /jawab tiap 2 detik, max 60 detik
+async function pollJawab(){
+ var url='/jawab';
  var start=Date.now();
  while(Date.now()-start<60000){
   try{
-   var r=await fetch(baseUrl+'/jawab',{signal:AbortSignal.timeout(5000)});
+   var r=await fetch(url,{signal:AbortSignal.timeout(5000)});
    var d=await r.json();
-   if(d.reply&&d.reply!=''){
-    // Bersihin file biar gak dobel
-    fetch(baseUrl+'/reset',{method:'POST',signal:AbortSignal.timeout(2000)}).catch(function(){});
-    return d.reply;
+   var j=(d.reply||'').replace(/^\ufeff/,'').trim();
+   if(j){
+    fetch('/reset',{method:'POST',signal:AbortSignal.timeout(2000)}).catch(function(){});
+    return j;
    }
   }catch(e){}
   await new Promise(function(r){setTimeout(r,2000);});
  }
  return null;
+}
+
+async function sendAPI(t){
+ L('[Bang] '+t,'b');
+ face('KE GRUP...','#fc0');
+ try{
+  var r=await fetch('/',{
+   method:'POST',headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({message:t}),
+   signal:AbortSignal.timeout(5000)
+  });
+  var d=await r.json();
+  if(d.reply&&d.reply!='OK')throw new Error(d.reply);
+  var jwb=await pollJawab();
+  if(jwb)return jwb;
+ }catch(e){}
+ // Fallback DeepSeek
+ face('DEEPSEEK...','#fc0');
+ try{
+  var r=await fetch(URL,{
+   method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+KEY},
+   body:JSON.stringify({model:'deepseek-chat',messages:[{role:'system',content:SYS},{role:'user',content:t}],max_tokens:300})
+  });
+  var d=await r.json();
+  return d.choices&&d.choices[0]?d.choices[0].message.content:'Error';
+ }catch(e){L('API error','e');return 'Maaf Bang, lagi error';}
 }
 
 async function getKurs(){
