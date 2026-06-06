@@ -82,9 +82,11 @@ var busy=0,rec=null,TTS_URL='https://kirotts.loca.lt/tts?text=';
 function L(t,c){var p='<br>';if(c=='b')p+='<b style="color:#ff3333">&gt; </b><span style="color:#ff3333">';else if(c=='g')p+='<b style="color:#00ff41">&gt; </b><span style="color:#00ff41">';else p+='<span style="color:#0ff">';lg.innerHTML+=p+t+'</span>';lg.scrollTop=lg.scrollHeight;}
 function face(s,c){st.innerText=s;st.style.color=c;st.style.borderColor=c;}
 
+var BASE='http://100.118.65.83:8558'; // Tailscale IP
+
 async function sendAPI(t){
- // Coba relay via tunnel (bisa dari HP!)
- var TUNNELS=['http://100.118.65.83:8558','https://wow-untracked-sepia.ngrok-free.dev','http://127.0.0.1:8558'];
+ // Kirim ke backend via Tailscale/ngrok
+ var TUNNELS=[BASE,'https://wow-untracked-sepia.ngrok-free.dev','http://127.0.0.1:8558'];
  for(var i=0;i<TUNNELS.length;i++){
   try{
    var r=await fetch(TUNNELS[i],{
@@ -94,10 +96,19 @@ async function sendAPI(t){
     signal:AbortSignal.timeout(5000)
    });
    var d=await r.json();
-   if(d.reply&&d.reply!='Pesan diterima.')return d.reply;
+   if(d.reply===null||d.reply===''){
+    // Backend terima, polling jawaban
+    var jwb=await pollJawab(TUNNELS[i]);
+    if(jwb)return jwb;
+   }
+   if(d.reply&&d.reply!='OK')return d.reply;
+   break; // Backend terima, polling aja
   }catch(e){}
  }
- // Fallback ke DeepSeek langsung
+ // Polling dari BASE
+ var jwb2=await pollJawab(BASE);
+ if(jwb2)return jwb2;
+ // Fallback DeepSeek
  try{
   var r=await fetch(URL,{
    method:'POST',
@@ -107,6 +118,24 @@ async function sendAPI(t){
   var d=await r.json();
   return d.choices&&d.choices[0]?d.choices[0].message.content:'Error';
  }catch(e){L('API error','e');return 'Maaf Bang, lagi error';}
+}
+
+async function pollJawab(baseUrl){
+ // Polling GET /jawab tiap 2 detik, max 60 detik
+ var start=Date.now();
+ while(Date.now()-start<60000){
+  try{
+   var r=await fetch(baseUrl+'/jawab',{signal:AbortSignal.timeout(5000)});
+   var d=await r.json();
+   if(d.reply&&d.reply!=''){
+    // Bersihin file biar gak dobel
+    fetch(baseUrl+'/reset',{method:'POST',signal:AbortSignal.timeout(2000)}).catch(function(){});
+    return d.reply;
+   }
+  }catch(e){}
+  await new Promise(function(r){setTimeout(r,2000);});
+ }
+ return null;
 }
 
 async function getKurs(){
