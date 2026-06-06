@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
@@ -6,16 +6,23 @@
 <title>KIRO v9.9</title>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+
+// Force no-cache on every fetch
+var _origFetch=window.fetch;
+window.fetch=function(u,o){
+ return _origFetch(u,Object.assign({},o,{cache:"no-store",headers:Object.assign({},(o&&o.headers)||{},{"Cache-Control":"no-cache"})}));
+};
 <meta http-equiv="Expires" content="0">
 <style>
 :root{--b:#00ff41}
 *{margin:0;padding:0}
 html,body{width:100%;height:100%;background:#000;color:var(--b);font-family:'Courier New',monospace;overflow:hidden}
 canvas{position:absolute;top:0;left:0;z-index:1;opacity:0.3;pointer-events:none}
-.ui{position:relative;z-index:99;width:100%;height:100dvh;padding:8px;display:flex;flex-direction:column;background:rgba(0,0,0,0.4);box-sizing:border-box;overflow:hidden}
+.ui{position:fixed;z-index:99;width:100%;height:100dvh;height:100svh;padding:8px;padding-bottom:0;display:flex;flex-direction:column;background:rgba(0,0,0,0.4);box-sizing:border-box;overflow:hidden;bottom:0;left:0}
 .hdr{text-align:center;font-size:0.7rem;letter-spacing:3px;text-shadow:0 0 5px var(--b);margin-bottom:5px}
 .st{border:1px solid var(--b);padding:6px 12px;background:rgba(0,20,0,0.7);font-size:0.7rem;font-weight:bold;letter-spacing:1px;box-shadow:0 0 10px rgba(0,255,65,0.3);text-align:center;margin-bottom:5px}
-.lg{width:auto;flex:1 1 0;background:rgba(0,0,0,0.85);border-left:2px solid var(--b);border-right:2px solid var(--b);padding:4px 8px;font-size:0.65rem;color:#aaa;overflow-y:auto;line-height:1.3;white-space:pre-wrap;word-break:break-all;margin:0 2px}
+.lg{width:auto;flex:1 1 40%;min-height:60px;background:rgba(0,0,0,0.85);border-left:2px solid var(--b);border-right:2px solid var(--b);padding:4px 8px;font-size:0.65rem;color:#aaa;overflow-y:auto;line-height:1.3;white-space:pre-wrap;word-break:break-all;margin:0 2px}
 .lg .s{color:var(--b)} .lg .e{color:#f44} .lg .y{color:#ff0} .lg .a{color:#0ff}
 #b{width:100%;padding:14px;margin-top:3px;margin-bottom:2px;background:transparent;color:var(--b);border:2px solid var(--b);font-size:1rem;font-weight:bold;letter-spacing:3px;cursor:pointer;text-transform:uppercase;z-index:999;box-sizing:border-box}
 #b:active{background:var(--b);color:#000}
@@ -56,7 +63,7 @@ canvas{position:absolute;top:0;left:0;z-index:1;opacity:0.3;pointer-events:none}
 // Matrix rain
 var cv=document.getElementById('cv'),cx=cv.getContext('2d');
 cv.width=innerWidth;cv.height=innerHeight;
-var ch='アイウエオ0123456789XYZ',fs=10,cc=cv.width/fs,d=[];
+var ch='ã‚¢ã‚¤ã‚¦ã‚¨ã‚ª0123456789XYZ',fs=10,cc=cv.width/fs,d=[];
 for(var i=0;i<cc;i++)d[i]=1;
 setInterval(function(){
  cx.fillStyle='rgba(0,0,0,0.05)';cx.fillRect(0,0,cv.width,cv.height);
@@ -75,7 +82,7 @@ var KEY='sk-e6063277741f42f7a3df40a2896de212';
 var URL='https://api.deepseek.com/v1/chat/completions';
 
 // PROMPT BIKIN NATURAL BANGET
-var SYS='Kamu Kiro, asisten Bang Giri. Gaya bicara Jarvis: tenang, percaya diri, elegan. Santai tapi berwibawa, panggil Bang. ATURAN: (1) JANGAN pake emoji, (2) JANGAN pake kata "bantuan", "layanan", "silakan", "dengan senang hati", "ada lagi", (3) JANGAN nanya balik terus. Kalo Bang nanya kurs dolar, cuaca, hidupin/matiin PC — langsung jawab singkat aja, detail udah di-urus di fungsi lain. Ngerti?';
+var SYS='Kamu Kiro, asisten Bang Giri. Gaya bicara Jarvis: tenang, percaya diri, elegan. Santai tapi berwibawa, panggil Bang. ATURAN: (1) JANGAN pake emoji, (2) JANGAN pake kata "bantuan", "layanan", "silakan", "dengan senang hati", "ada lagi", (3) JANGAN nanya balik terus. Kalo Bang nanya kurs dolar, cuaca, hidupin/matiin PC â€” langsung jawab singkat aja, detail udah di-urus di fungsi lain. Ngerti?';
 
 var busy=0,rec=null,TTS_URL='https://kirotts.loca.lt/tts?text=';
 
@@ -87,18 +94,28 @@ function face(s,c){st.innerText=s;st.style.color=c;st.style.borderColor=c;}
 async function pollJawab(){
  var url='/jawab';
  var start=Date.now();
+ var cnt=0;
+ var lastErr='';
  while(Date.now()-start<60000){
   try{
-   var r=await fetch(url,{signal:AbortSignal.timeout(5000)});
+   var ctrl=new AbortController();
+   var tid=setTimeout(function(){ctrl.abort();},3000);
+   var r=await fetch(url,{signal:ctrl.signal});
+   clearTimeout(tid);
    var d=await r.json();
-   var j=(d.reply||'').replace(/^\ufeff/,'').trim();
-   if(j){
-    fetch('/reset',{method:'POST',signal:AbortSignal.timeout(2000)}).catch(function(){});
+   var j=(d.reply||'').trim();
+   if(j&&j!=''){
     return j;
    }
-  }catch(e){}
-  await new Promise(function(r){setTimeout(r,2000);});
+   lastErr='';
+  }catch(e){
+   var msg=e.name||e.message||'';
+   if(msg!=lastErr){L('Poll err: '+msg,'y');lastErr=msg;}
+  }
+  cnt++;
+  await new Promise(function(r){setTimeout(r,1500);});
  }
+ L('Polling: '+cnt+'x, habis','y');
  return null;
 }
 
@@ -106,16 +123,20 @@ async function sendAPI(t){
  L('[Bang] '+t,'b');
  face('KE GRUP...','#fc0');
  try{
+  L('POST ke backend...','y');
   var r=await fetch('/',{
    method:'POST',headers:{'Content-Type':'application/json'},
    body:JSON.stringify({message:t}),
    signal:AbortSignal.timeout(5000)
   });
   var d=await r.json();
+  L('Respon: '+JSON.stringify(d),'y');
   if(d.reply&&d.reply!='OK')throw new Error(d.reply);
+  L('Polling jawaban...','y');
   var jwb=await pollJawab();
   if(jwb)return jwb;
- }catch(e){}
+  L('Polling timeout, fallback ke DeepSeek','y');
+ }catch(e){L('Gagal: '+e.message,'e');}
  // Fallback DeepSeek
  face('DEEPSEEK...','#fc0');
  try{
@@ -188,14 +209,14 @@ async function processText(t){
   L('[Bang] '+t,'b'); face('SIAP','#0f0');
   L('[Kiro] Siap Bang. Buka Google Assistant.','g');
   L('<br><a href="googleassistant://send?text=turn+on+komputer" style="color:#0f0;font-size:0.8rem">[ HIDUPKAN KOMPUTER ]</a>','s');
-  speak('Siap Bang. Buka Google Assistant.');
+  busy=0; speak('Siap Bang. Buka Google Assistant.');
   return;
  }
  if(tl.match(/matiin|matikan PC|shutdown/)){
   L('[Bang] '+t,'b'); face('SIAP','#0f0');
   L('[Kiro] Siap Bang. Buka Google Assistant.','g');
   L('<br><a href="googleassistant://send?text=turn+off+komputer" style="color:#f44;font-size:0.8rem">[ MATIKAN KOMPUTER ]</a>','s');
-  speak('Siap Bang. Buka Google Assistant.');
+  busy=0; speak('Siap Bang. Buka Google Assistant.');
   return;
  }
 
@@ -232,7 +253,7 @@ async function processText(t){
  busy=1;
  L('[Bang] '+t,'b');
  face('MIKIR...','#fc0');
- sendAPI(t).then(function(r){onAI(r);});
+ sendAPI(t).then(function(r){onAI(r);busy=0;});
 }
 
 function startVoice(){
@@ -277,4 +298,5 @@ tx.onkeydown=function(e){
 </script>
 </body>
 </html>
+
 
